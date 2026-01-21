@@ -1,6 +1,4 @@
 // CubeTech Innovations - Main JavaScript
-
-// DOM Elements
 const loader = document.getElementById('loader');
 const navbar = document.getElementById('navbar');
 const mobileToggle = document.getElementById('mobileToggle');
@@ -13,23 +11,15 @@ const carouselPrev = document.getElementById('carouselPrev');
 const carouselNext = document.getElementById('carouselNext');
 const carouselDots = document.getElementById('carouselDots');
 
-// Loader
 window.addEventListener('load', () => {
     document.body.classList.add('loading');
-    
-    // Simulate minimum loading time for effect
     setTimeout(() => {
         loader.classList.add('hidden');
         document.body.classList.remove('loading');
-        
-        // Trigger initial animations
         animateOnScroll();
     }, 1500);
 });
 
-// Navigation
-
-// Scroll effect for navbar
 let lastScroll = 0;
 
 window.addEventListener('scroll', () => {
@@ -44,21 +34,11 @@ window.addEventListener('scroll', () => {
     lastScroll = currentScroll;
 });
 
-// Mobile menu toggle
 mobileToggle.addEventListener('click', () => {
     mobileToggle.classList.toggle('active');
     navMenu.classList.toggle('active');
 });
 
-// Close mobile menu when clicking a link
-navMenu.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-        mobileToggle.classList.remove('active');
-        navMenu.classList.remove('active');
-    });
-});
-
-// Handle dropdown on mobile
 const dropdownItems = document.querySelectorAll('.has-dropdown');
 
 dropdownItems.forEach(item => {
@@ -67,12 +47,21 @@ dropdownItems.forEach(item => {
     link.addEventListener('click', (e) => {
         if (window.innerWidth <= 768) {
             e.preventDefault();
+            e.stopPropagation();
             item.classList.toggle('open');
         }
     });
 });
 
-// Close menu when clicking outside
+navMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', (e) => {
+        const parentItem = link.closest('.has-dropdown');
+        if (!parentItem || window.innerWidth > 768) {
+            mobileToggle.classList.remove('active');
+            navMenu.classList.remove('active');
+        }
+    });
+});
 document.addEventListener('click', (e) => {
     if (!navbar.contains(e.target) && navMenu.classList.contains('active')) {
         mobileToggle.classList.remove('active');
@@ -80,7 +69,6 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Smooth Scroll
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
         const href = this.getAttribute('href');
@@ -99,7 +87,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// Back to Top
 window.addEventListener('scroll', () => {
     if (window.pageYOffset > 500) {
         backToTop.classList.add('visible');
@@ -115,7 +102,6 @@ backToTop.addEventListener('click', () => {
     });
 });
 
-// Scroll Animations
 function animateOnScroll() {
     const elements = document.querySelectorAll('[data-animate]');
     
@@ -123,12 +109,9 @@ function animateOnScroll() {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const delay = entry.target.dataset.delay || 0;
-                
                 setTimeout(() => {
                     entry.target.classList.add('animated');
                 }, delay);
-                
-                // Unobserve after animation
                 observer.unobserve(entry.target);
             }
         });
@@ -140,7 +123,6 @@ function animateOnScroll() {
     elements.forEach(el => observer.observe(el));
 }
 
-// Counter Animation
 function animateCounters() {
     const counters = document.querySelectorAll('.stat-number');
     
@@ -156,11 +138,8 @@ function animateCounters() {
                 function updateCounter(currentTime) {
                     const elapsed = currentTime - startTime;
                     const progress = Math.min(elapsed / duration, 1);
-                    
-                    // Easing function (ease-out-expo)
                     const easeOutExpo = 1 - Math.pow(2, -10 * progress);
                     const current = Math.floor(start + (target - start) * easeOutExpo);
-                    
                     counter.textContent = current;
                     
                     if (progress < 1) {
@@ -181,14 +160,12 @@ function animateCounters() {
     counters.forEach(counter => observer.observe(counter));
 }
 
-// Initialize counters
 animateCounters();
 
-// Team Carousel
 let currentSlide = 0;
 let slidesToShow = 4;
 let totalSlides = 2;
-const totalMembers = 8; // Total team members
+const totalMembers = 8;
 
 function updateSlidesToShow() {
     if (window.innerWidth <= 480) {
@@ -204,8 +181,6 @@ function updateSlidesToShow() {
         slidesToShow = 4;
         totalSlides = Math.ceil(totalMembers / 4);
     }
-    
-    // Update dots
     updateDots();
 }
 
@@ -233,17 +208,19 @@ function updateDots() {
 function updateCarousel() {
     if (!carouselTrack) return;
     
-    const slideWidth = 100 / slidesToShow;
-    const offset = currentSlide * slideWidth * slidesToShow;
+    const container = carouselTrack.parentElement;
+    const containerWidth = container.offsetWidth;
+    const gapPx = window.innerWidth <= 768 ? 16 : 32;
+    const itemWidth = (containerWidth - (gapPx * (slidesToShow - 1))) / slidesToShow;
+    const offset = currentSlide * (itemWidth + gapPx);
+    const offsetPercent = (offset / containerWidth) * 100;
     
-    carouselTrack.style.transform = `translateX(-${offset}%)`;
+    carouselTrack.style.transform = `translateX(-${offsetPercent}%)`;
     
-    // Update dots
     document.querySelectorAll('.dot').forEach((dot, index) => {
         dot.classList.toggle('active', index === currentSlide);
     });
     
-    // Update button states
     if (carouselPrev) {
         carouselPrev.style.opacity = currentSlide === 0 ? '0.5' : '1';
         carouselPrev.disabled = currentSlide === 0;
@@ -273,7 +250,6 @@ if (carouselNext) {
     });
 }
 
-// Touch support for carousel
 let touchStartX = 0;
 let touchEndX = 0;
 
@@ -301,26 +277,21 @@ function handleSwipe() {
     }
 }
 
-// Initialize carousel
 updateSlidesToShow();
 updateCarousel();
 
-// Update on resize
 window.addEventListener('resize', () => {
     updateSlidesToShow();
     currentSlide = 0;
     updateCarousel();
 });
 
-// Contact Form
 if (contactForm) {
     contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const submitBtn = contactForm.querySelector('.btn-submit');
         const originalText = submitBtn.innerHTML;
-        
-        // Show loading state
         submitBtn.innerHTML = `
             <span>Sending...</span>
             <svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -329,16 +300,10 @@ if (contactForm) {
             </svg>
         `;
         submitBtn.disabled = true;
-        
-        // Simulate form submission
         await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Reset form and show success
         contactForm.reset();
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
-        
-        // Show toast notification
         showToast('Message sent successfully!');
     });
 }
@@ -354,7 +319,6 @@ function showToast(message) {
     }, 4000);
 }
 
-// Input Animations
 const formInputs = document.querySelectorAll('.form-group input, .form-group textarea');
 
 formInputs.forEach(input => {
@@ -369,7 +333,6 @@ formInputs.forEach(input => {
     });
 });
 
-// Newsletter Form
 const newsletterForm = document.querySelector('.footer-newsletter');
 
 if (newsletterForm) {
@@ -385,7 +348,6 @@ if (newsletterForm) {
     });
 }
 
-// Parallax Effect
 const heroImage = document.querySelector('.hero-image');
 
 if (heroImage && window.innerWidth > 768) {
@@ -397,7 +359,6 @@ if (heroImage && window.innerWidth > 768) {
     });
 }
 
-// Image Lazy Loading
 const lazyImages = document.querySelectorAll('img[data-src]');
 
 if ('IntersectionObserver' in window) {
@@ -415,7 +376,6 @@ if ('IntersectionObserver' in window) {
     lazyImages.forEach(img => imageObserver.observe(img));
 }
 
-// Hover Effects
 const teamMembers = document.querySelectorAll('.team-member');
 
 teamMembers.forEach(member => {
@@ -438,7 +398,6 @@ teamMembers.forEach(member => {
     });
 });
 
-// Typing Effect
 function typeWriter(element, text, speed = 50) {
     let i = 0;
     element.textContent = '';
@@ -454,16 +413,13 @@ function typeWriter(element, text, speed = 50) {
     type();
 }
 
-// Keyboard Navigation
 document.addEventListener('keydown', (e) => {
-    // ESC to close mobile menu
     if (e.key === 'Escape' && navMenu.classList.contains('active')) {
         mobileToggle.classList.remove('active');
         navMenu.classList.remove('active');
     }
 });
 
-// Debounce Utility
 function debounce(func, wait = 20) {
     let timeout;
     return function executedFunction(...args) {
@@ -476,14 +432,9 @@ function debounce(func, wait = 20) {
     };
 }
 
-// Apply debounce to scroll events
-const debouncedScroll = debounce(() => {
-    // Any expensive scroll operations can go here
-}, 10);
-
+const debouncedScroll = debounce(() => {}, 10);
 window.addEventListener('scroll', debouncedScroll, { passive: true });
 
-// DOM Ready
 document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('dom-loaded');
 });
